@@ -24,18 +24,22 @@ syn match  aptDateStop      /^\s\+----*/      contained
 " section title matches subsections as well, which start with one to four stars
 syn match  aptSectionTitle  /^\(\*\{1,4}\s*\)\?[a-zA-Z0-9{].*/ contains=aptAnchor
 
-syn region aptVerbatimText  matchgroup=aptVerbatim start="^[+-]---*+\?" end="^[+-]---*+\?" keepend
+syn region aptVerbatimText  matchgroup=aptVerbatim start="^[+-]---*+\?" end="^[+-]---*+\?"
 
-syn region aptFigure        start="^\[" end="]" oneline keepend
-syn match  aptFigureCaption /\(^\[.*\]\)\@<=.*/
+syn region aptFigure        start="^\[" end="]" oneline nextgroup=aptFigureCaption
+syn match  aptFigureCaption /.*/ contained
 
-syn match  aptTableRowSep   /^\*--[*+:-]*/ nextgroup=aptTableCaption,aptTableCells skipnl
-syn match  aptTableCells    /^\(|\|\s\).*/ contained contains=aptTableCellSep nextgroup=aptTableCells,aptTableRowSep skipnl
-syn match  aptTableCellSep  /\\\@<!|/      contained
-syn match  aptTableCaption  /^\w.*/        contained
+syn match  aptTableRowSep   /^\*--[*+:-]*/  nextgroup=aptTableCaption,aptTableCells skipnl
+syn match  aptTableCells    /^\(|\|\s\).*/  contained contains=aptPipeSep nextgroup=aptTableCells,aptTableRowSep skipnl
+syn match  aptPipeSep       /\\\@<!|/  contained
+syn match  aptTableCaption  /^\w.*/    contained
+
+syn region aptMacroContents matchgroup=aptMacro start="^%{" end="}" oneline contains=aptPipeSep,aptAssign,aptMacroUrl
+syn match  aptAssign        /=/        contained
+syn match  aptMacroUrl      /\(\(src\|url\|file\)=\)\@<=[^|}]*/ contained
 
 syn match  aptHorRule       /^====*$/
-syn match  aptComment       /\~\~.*$/ containedin=ALL contains=NONE
+syn match  aptComment       /\~\~.*$/  containedin=ALL contains=NONE
 
 " not matching page breaks, since the C-L is already highlighted by VIM
 syn match  aptLineBreak     /\\$/
@@ -51,14 +55,12 @@ syn region aptMonospace     start="<<<" end=">>>" oneline
 
 syn region aptAnchor        start="{"  end="}"  oneline
 syn region aptLink          start="{{" end="}}" oneline
-syn region aptAnchor        matchgroup=aptAnchor start="{{\({\)\@=" end="}}" oneline contains=aptInnerLink
+syn region aptAnchor        matchgroup=aptAnchor start="{{{\@=" end="}}" oneline contains=aptInnerLink
 syn region aptInnerLink     contained start="{" end="}"
 
 syn match  aptBulletList    /^\s\+\*/
-syn region aptDefList       matchgroup=aptDefList start="\s\["   end="]"  oneline keepend contains=aptDefIndex
-syn match  aptDefIndex      /[^\]]*/  contained
-syn region aptNumList       matchgroup=aptNumList start="\s\[\[" end="]]" oneline keepend contains=aptListIndex
-syn match  aptListIndex     /\w\+/    contained
+syn region aptDefIndex      matchgroup=aptDefList start="\s\["   end="]"  oneline
+syn region aptListIndex     matchgroup=aptNumList start="\s\[\[" end="]]" oneline
 
 
 " Default highlighting
@@ -88,8 +90,13 @@ if version >= 508 || !exists("did_doxiaapt_syntax_inits")
 
   HiLink aptTableRowSep    PreProc
   HiLink aptTableCells     Constant
-  HiLink aptTableCellSep   PreProc
+  HiLink aptPipeSep        PreProc
   HiLink aptTableCaption   Identifier
+
+  HiLink aptMacro          Macro
+  HiLink aptMacroContents  Constant
+  HiLink aptMacroUrl       Underlined
+  HiLink aptAssign         Operator
 
   HiLink aptHorRule        PreProc
   HiLink aptComment        Comment
