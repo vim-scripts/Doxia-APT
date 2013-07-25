@@ -1,3 +1,0 @@
-This is a mirror of http://www.vim.org/scripts/script.php?script_id=2966
-
-Syntax highlighting for Doxia APT files, as used by Maven for documentation purposes. The format is described here: http://maven.apache.org/doxia/references/apt-format.html
